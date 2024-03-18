@@ -1,0 +1,5 @@
+/venv
+/data
+/MotionDetectionModel*
+/MDM*
+__pycache__
