@@ -3,18 +3,18 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from custom_dataloader import CarMovementDataset, resize, resize_and_pad
-from model import MotionDetectionModel, MotionDetectionModel_Resnet18_RNN, MotionDetectionModel_Resnet50_RNN
+from custom_dataloader import CarMovementDataset, CarMovementDataset2, resize, resize_and_pad
+from model import MotionDetectionModel, MotionDetectionModel_Resnet18_RNN, MotionDetectionModel_Resnet50_RNN, MotionDetectionModel_Resnet50_RNN_5
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
-from utils import read_dataset, split_dataset
+from utils import read_dataset, read_dataset_v2, split_dataset
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-file_path = 'C:/Users/janny/Aalto_project_2/data/full_dataset.txt'
+file_path = 'C:/Users/janny/Aalto_project_2/data/elsaesserstr1_dataset5.txt'
 
-pairs, labels = read_dataset(file_path)
+pairs, labels = read_dataset_v2(file_path)
 pairs_train, pairs_test, labels_train, labels_test = split_dataset(pairs, labels, test_size=0.2)
 
 print(f'Total pairs: {len(pairs)}')
@@ -28,13 +28,13 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-test_dataset = CarMovementDataset(pairs=pairs_test, labels=labels_test, transform=transform)
+test_dataset = CarMovementDataset2(pairs=pairs_test, labels=labels_test, transform=transform)
 test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False)
 
-model_folder = 'MDM_Resnet50_RNN_25_epochs_1_location_trained_20240318-111308'
+model_folder = 'MDM_Resnet50_RNN_25_epochs_elsaesserstr1_dataset5_trained_20240318-123311'
 
 # Load the trained model (assuming it's saved as 'motion_detection_model.pth')
-model = MotionDetectionModel_Resnet50_RNN(num_classes=2)
+model = MotionDetectionModel_Resnet50_RNN_5(num_classes=2)
 model.load_state_dict(torch.load(f'{model_folder}/{model_folder}.pth'))
 model.to(device)
 model.eval()
@@ -46,9 +46,9 @@ all_predictions = []
 with torch.no_grad():
     for i, data in tqdm(enumerate(test_dataloader, 0), total=len(test_dataloader)):
         img_pair, labels = data
-        img1, img2 = img_pair[0].to(device), img_pair[1].to(device)
+        img1, img2, img3, img4, img5 = img_pair[0].to(device), img_pair[1].to(device), img_pair[2].to(device), img_pair[3].to(device), img_pair[4].to(device)
         labels = labels.to(device)
-        outputs = model(img1, img2)
+        outputs = model(img1, img2, img3, img4, img5)
         _, predicted = torch.max(outputs.data, 1)
 
         all_targets.extend(labels.cpu().numpy())

@@ -6,16 +6,16 @@ from torch.utils.data import DataLoader, random_split
 import time
 import json
 from tqdm import tqdm
-from custom_dataloader import CarMovementDataset, resize, resize_and_pad
-from model import MotionDetectionModel, MotionDetectionModel_Resnet18_RNN, MotionDetectionModel_Resnet50_RNN
-from utils import read_dataset, split_dataset
+from custom_dataloader import CarMovementDataset, CarMovementDataset2, resize, resize_and_pad
+from model import MotionDetectionModel, MotionDetectionModel_Resnet18_RNN, MotionDetectionModel_Resnet50_RNN, MotionDetectionModel_Resnet50_RNN_5
+from utils import read_dataset, read_dataset_v2, split_dataset
 
-BACTH_SIZE = 128
+BACTH_SIZE = 64
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model_name = 'MDM_Resnet50_RNN_25_epochs_1_location'
+model_name = 'MDM_Resnet50_RNN_25_epochs_elsaesserstr1_dataset5'
 training_date = time.strftime("%Y%m%d-%H%M%S")
 
 MODEL_FOLDER_NAME = f'{model_name}_trained_{training_date}'
@@ -24,9 +24,9 @@ if not os.path.exists(MODEL_FOLDER_NAME):
     os.makedirs(MODEL_FOLDER_NAME, exist_ok=True)
 
 # Loading the data
-dateset_file_path = 'C:/Users/janny/Aalto_project_2/data/elsaesserstr1_dataset.txt'
+dateset_file_path = 'C:/Users/janny/Aalto_project_2/data/elsaesserstr1_dataset5.txt'
 
-pairs, labels = read_dataset(dateset_file_path)
+pairs, labels = read_dataset_v2(dateset_file_path)
 pairs_train, pairs_test, labels_train, labels_test = split_dataset(pairs, labels)
 
 print(f'Total pairs: {len(pairs)}')
@@ -39,7 +39,7 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-train_dataset = CarMovementDataset(pairs=pairs_train, labels=labels_train, transform=transform)
+train_dataset = CarMovementDataset2(pairs=pairs_train, labels=labels_train, transform=transform)
 # train_dataloader = DataLoader(train_dataset, batch_size=BACTH_SIZE, shuffle=True)
 
 # test_dataset = CarMovementDataset(pairs=pairs_test, labels=labels_test, transform=transform)
@@ -48,7 +48,7 @@ train_dataset = CarMovementDataset(pairs=pairs_train, labels=labels_train, trans
 # Training
 
 # Instantiate the model
-model = MotionDetectionModel_Resnet50_RNN(num_classes=2)
+model = MotionDetectionModel_Resnet50_RNN_5(num_classes=2)
 # Define the loss function
 criterion = nn.CrossEntropyLoss()
 # Define the optimizer (using Adam here, but you can choose others like SGD)
@@ -92,11 +92,11 @@ for epoch in range(num_epochs):
     for i, data in progress_bar:
         # Each batch consists of image pairs and their labels
         img_pair, labels = data
-        img1, img2 = img_pair[0].to(device), img_pair[1].to(device)
+        img1, img2, img3, img4, img5 = img_pair[0].to(device), img_pair[1].to(device), img_pair[2].to(device), img_pair[3].to(device), img_pair[4].to(device)
         labels = labels.to(device)
 
         optimizer.zero_grad()
-        outputs = model(img1, img2)
+        outputs = model(img1, img2, img3, img4, img5)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -128,14 +128,15 @@ for epoch in range(num_epochs):
         val_progress_bar = tqdm(enumerate(val_loader, 0), total=len(val_loader), desc=f"Epoch {epoch+1}/{num_epochs}")
         for i, data in val_progress_bar:
             img_pair, labels = data
-            img1, img2 = img_pair[0].to(device), img_pair[1].to(device)
+            img1, img2, img3, img4, img5 = img_pair[0].to(device), img_pair[1].to(device), img_pair[2].to(device), img_pair[3].to(device), img_pair[4].to(device)
             labels = labels.to(device)
 
-            outputs = model(img1, img2)
+            outputs = model(img1, img2, img3, img4, img5)
             loss = criterion(outputs, labels)
-            val_batch_losses.append(loss)
+            batch_loss = loss.item()
+            val_batch_losses.append(batch_loss)
 
-            val_running_loss += loss.item()
+            val_running_loss += batch_loss
 
             _, predicted = torch.max(outputs.data, 1)
             total_test += labels.size(0)

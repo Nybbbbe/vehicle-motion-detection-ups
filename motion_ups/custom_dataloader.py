@@ -94,3 +94,38 @@ class CarMovementDataset(Dataset):
 
         # Optionally, you can concatenate or stack images here if your model expects a single input tensor
         return (image1, image2), label
+    
+
+class CarMovementDataset2(Dataset):
+    def __init__(self, pairs, labels, transform=None):
+        """
+        Args:
+            pairs (list of tuples): List of tuples containing image paths for the pairs.
+            labels (list): List of labels indicating movement (1) or no movement (0).
+            transform (callable, optional): Optional transform to be applied on a sample.
+        """
+        self.pairs = pairs
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, idx):
+        img_path1, img_path2, img_path3, img_path4, img_path5 = self.pairs[idx]
+        image1 = Image.open(img_path1)
+        image2 = Image.open(img_path2)
+        image3 = Image.open(img_path3)
+        image4 = Image.open(img_path4)
+        image5 = Image.open(img_path5)
+        label = self.labels[idx]
+
+        if self.transform:
+            image1 = self.transform(image1)
+            image2 = self.transform(image2)
+            image3 = self.transform(image3)
+            image4 = self.transform(image4)
+            image5 = self.transform(image5)
+
+        # Optionally, you can concatenate or stack images here if your model expects a single input tensor
+        return (image1, image2, image3, image4, image5), label

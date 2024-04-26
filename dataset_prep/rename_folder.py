@@ -16,12 +16,22 @@ def rename_file(original_file_path):
         print(f'Skipping non-image file: {filename}')
         return
     
-    # Split the filename by underscore
+    # # Split the filename by underscore
     parts = filename.split('_')
+    
+    # # Extract the number as a string and convert to integer for filename
+    # if len(parts) > 1:
+    #     new_filename = str(int(parts[1].split('.')[0])) + '.jpg'
+    # else:
+    #     # If the filename doesn't match expected pattern, don't change it
+    #     return
+
+    # # Split the filename by underscore
+    parts = filename.split('.')
     
     # Extract the number as a string and convert to integer for filename
     if len(parts) > 1:
-        new_filename = '2_' + str(int(parts[1])) + '.jpg'
+        new_filename = str(int(parts[0])) + '.jpg'
     else:
         # If the filename doesn't match expected pattern, don't change it
         return

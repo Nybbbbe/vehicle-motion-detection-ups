@@ -12,14 +12,14 @@ def generate_fixed_labels(labels_file_path, output_file_path, max_frame):
     # Write the fixed labels to a new file
     with open(output_file_path, 'w') as output_file:
         for frame, label in frame_labels.items():
-            output_file.write(f'2_{frame}.jpg, {label}\n')
+            output_file.write(f'{frame}.jpg, {label}\n')
 
     print(f"Fixed labels written to {output_file_path}")
 
 if __name__ == "__main__":
-    labels_file_path = 'C:/Users/janny/Aalto_project_2/data/zinkmatttenstr1/labels.txt'
-    output_file_path = 'C:/Users/janny/Aalto_project_2/data/zinkmatttenstr1/fixed_labels.txt'
-    max_frame = 2877
+    labels_file_path = 'C:/Users/janny/Aalto_project_2/data/granadaallee1/images/labels.txt'
+    output_file_path = 'C:/Users/janny/Aalto_project_2/data/granadaallee1/images/fixed_labels.txt'
+    max_frame = 2207
 
     # Generate the fixed labels file
     generate_fixed_labels(labels_file_path, output_file_path, max_frame)
